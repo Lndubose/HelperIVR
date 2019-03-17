@@ -26,12 +26,12 @@ def main():
     with resp.gather(num_digits=1, action=url_for("parse"), method='POST') \
             as gather:
         gather.say("If you are calling about a " +
-                   "concern with a client press 1, " +
-                   "unable to make a visit press 2, " +
-                   "for timesheets press 3, " +
-                   "for scheduling press 4, " +
-                   "for payments press 5, " +
-                   "and all other options press 6.")
+                   "concern with a client, press 1, " +
+                   "unable to make a visit, press 2, " +
+                   "for timesheets, press 3, " +
+                   "for scheduling, press 4, " +
+                   "for payments, press 5, " +
+                   "and all other options, press 6.")
 
     resp.redirect(url_for('main'))
     return str(resp)
@@ -92,18 +92,23 @@ def recordMessage(resp):
              "After the beep, please leave your first and last name, " +
              "phone number, your client's name and your message. Thank you.")
 
-    resp.record(action=url_for('sendSMS', category=category))
+    resp.record(action=url_for('welcome'),
+                transcribeCallback=url_for('sendSMS', category=category))
+
+    resp.hangup()
 
     return str(resp)
 
 
-@app.route("/sms", methods=['GET', 'POST'])
-def sendSMS():
+@app.route("/sms/<category>", methods=['GET', 'POST'])
+def sendSMS(category):
     client = Client(account_sid, auth_token)
 
     body = "Hello, a helper has requested help.\n" \
         f"From: {request.values['Caller']}\n" \
-        f"Recoding: {request.values['RecordingUrl']}\n"
+        f"Category: {category}\n" \
+        f"Recoding: {request.values['RecordingUrl']}\n" \
+        f"Message: {request.values['TranscriptionText']}\n"
 
     message = client.messages.create(
         body=body,
