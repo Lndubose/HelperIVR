@@ -1,5 +1,5 @@
 from flask import Flask, request, url_for
-from twilio.twiml.voice_response import Record, Redirect, VoiceResponse, Hangup
+from twilio.twiml.voice_response import Redirect, VoiceResponse
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 from setttings import auth_token, account_sid, repNumber
@@ -70,7 +70,8 @@ def callRep(resp):
     resp.say("Please hold as we connect you with " +
              "a Customer Service Representative.")
     resp.dial(repNumber)
-    return False
+    resp.say("Sorry, there are no respresentatives at the moment.")
+    return resp
 
 # request value: CallSid = sid, ApiVersion = '2010-04-01'
 # From = number calling also Caller is the same
@@ -97,7 +98,7 @@ def recordMessage(resp):
 
     resp.hangup()
 
-    return str(resp)
+    return resp
 
 
 @app.route("/sms/<category>", methods=['GET', 'POST'])
@@ -107,8 +108,10 @@ def sendSMS(category):
     body = "Hello, a helper has requested help.\n" \
         f"From: {request.values['Caller']}\n" \
         f"Category: {category}\n" \
-        f"Recoding: {request.values['RecordingUrl']}\n" \
-        f"Message: {request.values['TranscriptionText']}\n"
+        f"Recoding: {request.values['RecordingUrl']}\n"
+
+    if 'TranscriptionText' in request.values:
+        body = body + f"Message: {request.values['TranscriptionText']}\n"
 
     message = client.messages.create(
         body=body,
