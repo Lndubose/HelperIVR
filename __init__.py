@@ -2,7 +2,7 @@ from flask import Flask, request, url_for
 from twilio.twiml.voice_response import Redirect, VoiceResponse
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
-from setttings import auth_token, account_sid, repNumber
+from setttings import auth_token, account_sid, repNumber, twilioNumber
 
 app = Flask(__name__)
 
@@ -115,7 +115,7 @@ def sendSMS(category):
 
     message = client.messages.create(
         body=body,
-        from_="+13864332192",
+        from_=twilioNumber,
         to=repNumber
     )
     return message.sid
